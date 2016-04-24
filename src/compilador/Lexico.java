@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Iterator;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.regex.*;
 
 /**
@@ -45,6 +47,9 @@ public class Lexico {
         grammar.put("unknown",Pattern.compile(".*"));
     }
     
+    //Tabela de símbolos contendo identificador e tipo
+    protected static HashMap<String, String> symbol_table = new HashMap<String, String>();
+    
     //Lista com os lexemas capturados pelo parser
     protected static ArrayList <String> lexemes;
     
@@ -82,15 +87,30 @@ public class Lexico {
         String lex;
         
         //Verifica o padrões ao qual cada lexema pertence
+        System.out.println("Tokens encontrados");
         while(i.hasNext()){
             lex = i.next();
             for(HashMap.Entry<String, Pattern> entry : grammar.entrySet()){
               Matcher m = entry.getValue().matcher(lex);
               if(m.matches()){
+                  String localKey = entry.getKey();
+                  if(localKey.equals("identifier")) {
+                    if(symbol_table.get(lex) == null) {
+                        symbol_table.put(lex, "identifier");
+                    }   
+                  }
                   System.out.println("Token: " + lex + " -> " + entry.getKey());
                   break;
               }
             }
+        }
+        System.out.println("Tabela de símbolos:");
+        
+        Iterator<Entry<String,String>> is = symbol_table.entrySet().iterator();
+        
+        while (is.hasNext()) {
+            Entry<String, String> symbol = is.next();
+            System.out.println("Name: " + symbol.getKey() + ", Type: " + symbol.getValue());
         }
     }
 }
