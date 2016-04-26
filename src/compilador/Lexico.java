@@ -52,13 +52,15 @@ public class Lexico {
     
     //Lista com os lexemas capturados pelo parser
     protected static ArrayList <String> lexemes;
+    private String filename;
     
-    public Lexico(){
+    public Lexico(String filename){
         lexemes = new ArrayList<String>();
+        this.filename = filename;
     }
     
     public void analiseLexica(){
-        Parser parser = new Parser("teste.txt");
+        Parser parser = new Parser(filename);
         String palavra = parser.proximaPalavra();
         
         while(!palavra.equals("EOF")){

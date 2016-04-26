@@ -13,8 +13,8 @@ public class Compilador {
 
     
     public static void main(String[] args) {
-        
-        Lexico lexico = new Lexico();
+        String filename = args[0];
+        Lexico lexico = new Lexico(filename);
         lexico.analiseLexica();
     }
 }
