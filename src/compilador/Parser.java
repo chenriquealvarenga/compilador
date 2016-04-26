@@ -13,7 +13,7 @@ public class Parser {
   private BufferedReader data;
   private String line;
   private StringTokenizer st;
-  private static final String delim= ",;+-*/%(){} ";
+  private static final String delim= "\t,;+-*/%(){} ";
   private boolean bracket= false;
 
   public Parser(String name) {
