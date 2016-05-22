@@ -6,6 +6,9 @@ package compilador;
  */
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.StringTokenizer;
 
 public class Parser {
@@ -13,52 +16,31 @@ public class Parser {
   private BufferedReader data;
   private String line;
   private StringTokenizer st;
-  private static final String delim= "\t,;+-*/%(){} ";
+  private static final String delim = "\r\t,;+-*/%(){} ";
   private boolean bracket= false;
 
   public Parser(String name) {
 
     try {
-      file= new FileReader(name);
-      data= new BufferedReader (file);
-      line= data.readLine();
-      if (line == null)
-         st= null;
-      else st= new StringTokenizer(line, delim, true);
+      //Conteudo do arquivo considerando encode em UTF-8 (padrao)
+      String contentArchive = new String(Files.readAllBytes(Paths.get(name)), StandardCharsets.UTF_8);
+      
+      //Transformando as possibilidade de separador alem de operacoes em espacos      
+      contentArchive = contentArchive.replace(",", " ");
+      //Condensando espacos multiplos em unificados
+      contentArchive = contentArchive.replaceAll(" +", " ");
+      
+      st= new StringTokenizer(contentArchive, delim, true);
+      
     }
     catch (Exception e) {
 	  System.out.println(e);
     }
   }
   
-
   public String proximaPalavra() {
-
-    if (st.hasMoreTokens()) {
-       String s= st.nextToken();
-       if (s.equals("{"))
-          bracket = true;
-       if(s.equals("}"))
-           bracket = false;
-       if (s.equals(" ") && !bracket){
-          return proximaPalavra();
-       }
-       else return (st.hasMoreTokens() ? s : s + "\\n");
-    }
-    else {
-     try {
-        line= data.readLine();
-        if (line == null)
-           return "EOF";
-        else {
-		  st = new StringTokenizer(line, delim, true);
-		  return proximaPalavra();
-        }
-      }
-      catch (Exception e) {
-		System.out.println(e);
-      }
-      return "EOF";
-    }
+      if(!st.hasMoreTokens()) return "EOF";      
+      return st.nextToken();      
   }
+  
 }

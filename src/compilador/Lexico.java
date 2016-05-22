@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.*;
+import javafx.util.Pair;
 
 /**
  *
@@ -18,6 +19,9 @@ public class Lexico {
     static
     {
         grammar = new LinkedHashMap<String, Pattern>();
+        grammar.put("space", Pattern.compile(" +"));
+        grammar.put("LB", Pattern.compile("\r"));
+        grammar.put("EOF", Pattern.compile("EOF"));
         grammar.put("var", Pattern.compile("^var$"));
         grammar.put("begin", Pattern.compile("^begin$"));
         grammar.put("end",Pattern.compile("^end$"));
@@ -42,77 +46,66 @@ public class Lexico {
         grammar.put("comment",Pattern.compile("^%$"));
         grammar.put("newline",Pattern.compile("\\n"));
         grammar.put("integer_const",Pattern.compile("(^[1-9]+[0-9]*$)|(^0$)"));
-        grammar.put("identifier",Pattern.compile("(^[a-zA-Z][a-zA-Z0-9]{0,14}$)|(^_[a-zA-Z0-9]{1,14})"));
-        grammar.put("literal_const",Pattern.compile("^\\{[^\\{\n]*\\}$"));
+        grammar.put("identifier",Pattern.compile("(^[a-zA-Z][a-zA-Z0-9]*$)|(^_[a-zA-Z0-9]{1,14})"));
+        grammar.put("literal_const",Pattern.compile("^\\{[^\\{\n]*\\}$"));        
         grammar.put("unknown",Pattern.compile(".*"));
     }
     
     //Tabela de símbolos contendo identificador e tipo
     protected static HashMap<String, String> symbol_table = new HashMap<String, String>();
     
-    //Lista com os lexemas capturados pelo parser
-    protected static ArrayList <String> lexemes;
+    //Lista com os tokens capturados pelo parser
+    private ArrayList <Pair<String,String>> tokens;
     private String filename;
+    private int cabecaFila = 1;
     
     public Lexico(String filename){
-        lexemes = new ArrayList<String>();
+        tokens = new ArrayList<Pair<String,String>>();
         this.filename = filename;
     }
     
-    public void analiseLexica(){
-        Parser parser = new Parser(filename);
-        String palavra = parser.proximaPalavra();
+    public void analiseLexica() throws Exception{
+        Parser parser = new Parser(filename);        
         
-        while(!palavra.equals("EOF")){
-            //Verifica se a palavra é a última da linha para separá-la da quebra de linha
-            if(palavra.length() > 2 && palavra.substring(palavra.length()-2).equals("\\n")){
-                lexemes.add(palavra.substring(0, palavra.length()-2));
-                lexemes.add("\n");
-            }
-            //Verifica se é uma constante literal e concatena as palavras
-            //para formar a constante, caso haja espaço (" ") entre elas
-            else if(palavra.equals("{")){
-                String prox_palavra = parser.proximaPalavra();
-                while(!prox_palavra.equals("}") && !prox_palavra.equals("EOF")){
-                    palavra += prox_palavra;
-                    prox_palavra = parser.proximaPalavra();
-                }
-                lexemes.add(palavra+prox_palavra);
-                //lexemes.add(prox_palavra);
-            }
-            else
-                lexemes.add(palavra);
-            palavra = parser.proximaPalavra();
-        }
-        
-        Iterator<String> i = lexemes.iterator();
-        String lex;
-        
-        //Verifica o padrões ao qual cada lexema pertence
-        System.out.println("Tokens encontrados");
-        while(i.hasNext()){
-            lex = i.next();
+        String lexema = "";
+        do {
+            boolean match = false;
+            lexema = parser.proximaPalavra();           
+            
             for(HashMap.Entry<String, Pattern> entry : grammar.entrySet()){
-              Matcher m = entry.getValue().matcher(lex);
+              Matcher m = entry.getValue().matcher(lexema);
               if(m.matches()){
                   String localKey = entry.getKey();
                   if(localKey.equals("identifier")) {
-                    if(symbol_table.get(lex) == null) {
-                        symbol_table.put(lex, "identifier");
+                    if(symbol_table.get(lexema) == null) {
+                        symbol_table.put(lexema, "identifier");
                     }   
                   }
-                  System.out.println("Token: " + lex + " -> " + entry.getKey());
+                  tokens.add(new Pair<>(lexema, entry.getKey()));
+                  //System.out.println("Token: " + lexema + " -> " + entry.getKey());
+                  match = true;
                   break;
               }
             }
-        }
-        System.out.println("Tabela de símbolos:");
+            
+             if(!match) {
+                 throw new Exception("Token não reconhecido em: " + lexema);
+             }
+            
+        } while(!lexema.equals("EOF"));
         
-        Iterator<Entry<String,String>> is = symbol_table.entrySet().iterator();
-        
-        while (is.hasNext()) {
-            Entry<String, String> symbol = is.next();
-            System.out.println("Name: " + symbol.getKey() + ", Type: " + symbol.getValue());
-        }
     }
+
+    public Pair<String, String> proximoToken() {
+        if(cabecaFila > tokens.size()) return new Pair<>("EOF", "EOF");
+        
+        Pair<String, String> retObj =  tokens.get((cabecaFila-1));        
+        cabecaFila++;
+        return retObj;               
+    }
+    
+    public String buscaTabelaSimbolos(String chave) {
+        return symbol_table.get(chave);
+    }
+    
 }
