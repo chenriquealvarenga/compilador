@@ -26,7 +26,7 @@ public class Parser {
       String contentArchive = new String(Files.readAllBytes(Paths.get(name)), StandardCharsets.UTF_8);
       
       //Transformando as possibilidade de separador alem de operacoes em espacos      
-      contentArchive = contentArchive.replace(",", " ");
+      //contentArchive = contentArchive.replace(",", " ");
       //Condensando espacos multiplos em unificados
       contentArchive = contentArchive.replaceAll(" +", " ");
       

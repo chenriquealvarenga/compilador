@@ -38,7 +38,8 @@ public class Lexico {
         grammar.put("relop",Pattern.compile("(^=$)|(^>$)|(^<$)|(^>=$)|(^<=$)|(^<>$)"));
         grammar.put("addop",Pattern.compile("(^\\+$)|(^-$)|(^or$)"));
         grammar.put("mulop",Pattern.compile("(^\\*$)|(^/$)|(^and$)"));
-        grammar.put("parenthesis",Pattern.compile("(^[()]$)"));
+        grammar.put("lparenthesis",Pattern.compile("(^[(]$)"));
+        grammar.put("rparenthesis",Pattern.compile("(^[)]$)"));
 //        grammar.put("bracket",Pattern.compile("^[{}]$"));
         grammar.put("comma",Pattern.compile("^,$"));
         grammar.put("semicolon",Pattern.compile("^;$"));
