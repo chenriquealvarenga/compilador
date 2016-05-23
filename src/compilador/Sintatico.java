@@ -83,6 +83,7 @@ public class Sintatico {
                         !proximoToken.getValue().equals("do") &&
                         !proximoToken.getValue().equals("read") &&
                         !proximoToken.getValue().equals("write") &&  
+                        !proximoToken.getValue().equals("begin") && 
                         !proximoToken.getValue().equals("end")
                     ) {
                         throw new Exception();
@@ -198,13 +199,30 @@ public class Sintatico {
             case "integer_const":
                 proximoToken = pularEspacosQuebras();
                 if(
-                    !proximoToken.getValue().equals("semicolon")
+                    !proximoToken.getValue().equals("semicolon") &&
+                    !proximoToken.getValue().equals("mulop") &&
+                    !proximoToken.getValue().equals("addop")
                 ) {
                     throw new Exception();
+                } else {
+                    stmtAssign(proximoToken);
                 }
                 break;
             case "lparenthesis":
                 stmtExpression(token);
+                break;
+            case "mulop":
+            case "addop":
+                proximoToken = pularEspacosQuebras();
+                if(
+                    !proximoToken.getValue().equals("identifier") &&
+                    !proximoToken.getValue().equals("integer_const") &&
+                    !proximoToken.getValue().equals("lparenthesis")
+                ) {
+                    throw new Exception();
+                } else {
+                    stmtAssign(proximoToken);
+                }
                 break;
         }
         
