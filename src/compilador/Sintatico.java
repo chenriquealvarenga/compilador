@@ -9,7 +9,7 @@ import javafx.util.Pair;
 
 /**
  *
- * @author Matthaus
+ * @author Natália
  */
 public class Sintatico {
     
