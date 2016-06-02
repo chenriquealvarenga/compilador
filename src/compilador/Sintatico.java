@@ -42,7 +42,7 @@ public class Sintatico {
                     if(
                         !proximoToken.getValue().equals("is") && 
                         !proximoToken.getValue().equals("comma") && 
-                        !proximoToken.getValue().equals("rparenthesis") &&
+                        //!proximoToken.getValue().equals("rparenthesis") &&
                         !proximoToken.getValue().equals("assign")
                     ) {
                         throw new Exception();
@@ -80,7 +80,9 @@ public class Sintatico {
                         !proximoToken.getValue().equals("identifier") &&
                         !proximoToken.getValue().equals("var") &&
                         !proximoToken.getValue().equals("if") &&
+                        !proximoToken.getValue().equals("else") &&    
                         !proximoToken.getValue().equals("do") &&
+                        !proximoToken.getValue().equals("while") &&
                         !proximoToken.getValue().equals("read") &&
                         !proximoToken.getValue().equals("write") &&  
                         !proximoToken.getValue().equals("begin") && 
@@ -92,6 +94,8 @@ public class Sintatico {
                     }
                     break;
                 case "begin":
+                case "else":
+                case "do":
                     proximoToken = pularEspacosQuebras();
                     if(
                         !proximoToken.getValue().equals("identifier") &&
@@ -128,10 +132,13 @@ public class Sintatico {
                 case "lparenthesis":
                     proximoToken = pularEspacosQuebras();
                     if(
-                        !proximoToken.getValue().equals("identifier")
+                        !proximoToken.getValue().equals("identifier") &&
+                        !proximoToken.getValue().equals("integer_const")
                     ) {
                         throw new Exception();
                     } else {
+                        stmtLogicalExpression(proximoToken);                        
+                        proximoToken = pularEspacosQuebras();                        
                         conferirToken(proximoToken);
                     }
                     break;
@@ -153,13 +160,45 @@ public class Sintatico {
                 case "end":
                     proximoToken = pularEspacosQuebras();
                     if(
+                        !proximoToken.getValue().equals("identifier") &&
+                        !proximoToken.getValue().equals("if") &&
+                        !proximoToken.getValue().equals("do") &&
+                        !proximoToken.getValue().equals("read") &&
+                        !proximoToken.getValue().equals("write") &&
+                        !proximoToken.getValue().equals("end") &&
                         !proximoToken.getValue().equals("EOF")
                     ) {
                         throw new Exception();
                     } else {
-                        System.out.println("Arquivo analisado sintáticamente com sucesso");
+                        if(proximoToken.getValue().equals("EOF")) {
+                            System.out.println("Arquivo analisado sintáticamente com sucesso");
+                        } else {
+                            conferirToken(proximoToken);
+                        }
                     }
                     break;
+                case "if":
+                    proximoToken = pularEspacosQuebras();
+                    if(
+                        !proximoToken.getValue().equals("lparenthesis")
+                    ) {
+                        throw new Exception();
+                    } else {
+                        conferirToken(proximoToken);
+                    }
+                    break;
+                case "while":
+                    proximoToken = pularEspacosQuebras();
+                    if(
+                        !proximoToken.getValue().equals("lparenthesis")
+                    ) {
+                        throw new Exception();
+                    } else {
+                        conferirToken(proximoToken);
+                    }
+                    break;
+                default:
+                    throw new Exception();
             }   
         } catch(Exception ex) {
             String erro = ex.getMessage();
@@ -294,6 +333,71 @@ public class Sintatico {
                         throw new Exception();
                     } else {
                         stmtExpression(proximoToken);
+                    }
+                    break;
+            }
+        } catch(Exception ex) {
+            String erro = ex.getMessage();
+            if(erro == null) {
+                throw new Exception(String.format("Erro linha %1$d: %2$s %3$s", linhaAtual, token.getKey(), proximoToken.getKey()));
+            } else {
+                throw new Exception(erro);
+            }
+        }
+        
+    }
+    
+    private void stmtLogicalExpression(Pair<String, String> token) throws Exception {
+        Pair<String, String> proximoToken = null;    
+        
+        try {
+        
+            switch(token.getValue()) {
+                case "lparenthesis":
+                    proximoToken = pularEspacosQuebras();
+                    if(
+                        !proximoToken.getValue().equals("identifier") &&
+                        !proximoToken.getValue().equals("integer_const")
+                    ) {
+                        throw new Exception();
+                    } else {
+                        stmtLogicalExpression(proximoToken);
+                    }
+                    break;
+                case "integer_const":
+                case "identifier":
+                    proximoToken = pularEspacosQuebras();
+                    if(
+                        !proximoToken.getValue().equals("relop") &&
+                        !proximoToken.getValue().equals("mulop") &&
+                        !proximoToken.getValue().equals("rparenthesis")
+                    ) {
+                        throw new Exception();
+                    } else {
+                        stmtLogicalExpression(proximoToken);
+                    }
+                    break;
+                case "relop":
+                case "mulop":
+                    proximoToken = pularEspacosQuebras();
+                    if(                
+                        !proximoToken.getValue().equals("identifier") &&
+                        !proximoToken.getValue().equals("integer_const")
+                    ) {
+                        throw new Exception();
+                    } else {
+                        stmtLogicalExpression(proximoToken);
+                    }
+                    break;
+                case "rparenthesis":
+                    proximoToken = pularEspacosQuebras();
+                    if(                
+                        !proximoToken.getValue().equals("semicolon") &&
+                        !proximoToken.getValue().equals("then")
+                    ) {
+                        throw new Exception();
+                    } else {
+                        stmtLogicalExpression(proximoToken);
                     }
                     break;
             }
