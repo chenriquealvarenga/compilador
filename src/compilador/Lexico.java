@@ -41,15 +41,13 @@ public class Lexico {
         grammar.put("mulop",Pattern.compile("(^\\*$)|(^/$)|(^and$)"));
         grammar.put("lparenthesis",Pattern.compile("(^[(]$)"));
         grammar.put("rparenthesis",Pattern.compile("(^[)]$)"));
-//        grammar.put("bracket",Pattern.compile("^[{}]$"));
+        grammar.put("lbracket",Pattern.compile("^[{]$"));
+        grammar.put("rbracket",Pattern.compile("^[}]$"));
         grammar.put("comma",Pattern.compile("^,$"));
         grammar.put("semicolon",Pattern.compile("^;$"));
-        grammar.put("bracket",Pattern.compile("(^\\{$)|(^\\}$)"));
         grammar.put("comment",Pattern.compile("^%$"));
-        grammar.put("newline",Pattern.compile("\\n"));
         grammar.put("integer_const",Pattern.compile("(^[1-9]+[0-9]*$)|(^0$)"));
         grammar.put("identifier",Pattern.compile("(^[a-zA-Z][a-zA-Z0-9]{0,14}$)|(^_[a-zA-Z0-9]{1,14})"));
-        grammar.put("literal_const",Pattern.compile("^\\{[^\\{\n]*\\}$"));       
     }
     
     //Tabela de símbolos contendo identificador e tipo
@@ -85,8 +83,24 @@ public class Lexico {
                   else if(localKey.equals("LB")){
                       linha++;
                   }
-                  tokens.add(new Pair<>(lexema, entry.getKey()));
-//                  System.out.println("Token: " + lexema + " -> " + entry.getKey());
+                  else if(localKey.equals("lbracket")){
+                      String proxima = parser.proximaPalavra();
+                      while(!proxima.equals("}")){
+                          lexema += proxima;
+                          if(proxima.equals("EOF")||proxima.equals("{")
+                                  ||proxima.equals("\r")){
+                              throw new Exception("Token não reconhecido em: " + lexema + ", linha " + linha);
+                          }
+                          else{
+                              proxima = parser.proximaPalavra();
+                          }
+                      }
+                      lexema += proxima;
+                      localKey = "literal_const";
+                      
+                  }
+                  tokens.add(new Pair<>(lexema, localKey));
+//                  System.out.println("Token: " + lexema + " -> " + localKey);
                   match = true;
                   break;
               }

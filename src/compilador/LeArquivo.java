@@ -29,12 +29,16 @@ public class LeArquivo {
       //contentArchive = contentArchive.replace(",", " ");
       
       //Adicionando espaco antes e depois de relops e assigns para separa-los
-      contentArchive = contentArchive.replaceAll("<", " < ");
-      contentArchive = contentArchive.replaceAll(">", " > ");
       contentArchive = contentArchive.replaceAll("<=", " <= ");
       contentArchive = contentArchive.replaceAll(">=", " >= ");
       contentArchive = contentArchive.replaceAll("<>", " <> ");
       contentArchive = contentArchive.replaceAll(":=", " := ");
+      contentArchive = contentArchive.replaceAll("<", " < ");
+      contentArchive = contentArchive.replaceAll(">", " > ");
+      contentArchive = contentArchive.replaceAll("<  >", "<>");
+      contentArchive = contentArchive.replaceAll("< =", "<=");
+      contentArchive = contentArchive.replaceAll("> =", ">=");
+      
       
       //Condensando espacos multiplos em unificados
       contentArchive = contentArchive.replaceAll(" +", " ");

@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package compilador;
 
 import javafx.util.Pair;
@@ -15,205 +10,321 @@ public class Sintatico {
     
     Integer linhaAtual = 1;
     private Lexico lexico;
+    private Pair<String, String> token = null;
+    private Pair<String, String> previous_token = null;
     
     public Sintatico(Lexico lexico) {
         this.lexico = lexico;              
     }
     
     public void analiseSintatica() throws Exception {
-        Pair<String, String> token = lexico.proximoToken();
-        conferirToken(token);
+        token = lexico.proximoToken();
+        program();
     }
     
-    public void conferirToken(Pair<String, String> token) throws Exception {
-        Pair<String, String> proximoToken = null;
-        try {                  
-            switch(token.getValue()) {
-                case "var":
-                    proximoToken = pularEspacosQuebras();
-                    if(!proximoToken.getValue().equals("identifier")) {
-                        throw new Exception();
-                    } else {
-                        conferirToken(proximoToken);
-                    }
-                    break;
-                case "identifier":
-                    proximoToken = pularEspacosQuebras();
-                    if(
-                        !proximoToken.getValue().equals("is") && 
-                        !proximoToken.getValue().equals("comma") && 
-                        //!proximoToken.getValue().equals("rparenthesis") &&
-                        !proximoToken.getValue().equals("assign")
-                    ) {
-                        throw new Exception();
-                    } else {
-                        conferirToken(proximoToken);
-                    }
-                    break;
-                case "comma":
-                    proximoToken = pularEspacosQuebras();
-                    if(!proximoToken.getValue().equals("identifier")) {
-                        throw new Exception();
-                    } else {
-                        conferirToken(proximoToken);
-                    }
-                    break;
-                case "is":
-                    proximoToken = pularEspacosQuebras();
-                    if(!proximoToken.getValue().equals("type")) {
-                        throw new Exception();
-                    } else {
-                        conferirToken(proximoToken);
-                    }
-                    break;
-                case "type":
-                    proximoToken = pularEspacosQuebras();
-                    if(!proximoToken.getValue().equals("semicolon") && !proximoToken.getValue().equals("begin")) {
-                        throw new Exception();
-                    } else {
-                        conferirToken(proximoToken);
-                    }
-                    break;
-                case "semicolon":
-                    proximoToken = pularEspacosQuebras();
-                    if(
-                        !proximoToken.getValue().equals("identifier") &&
-                        !proximoToken.getValue().equals("var") &&
-                        !proximoToken.getValue().equals("if") &&
-                        !proximoToken.getValue().equals("else") &&    
-                        !proximoToken.getValue().equals("do") &&
-                        !proximoToken.getValue().equals("while") &&
-                        !proximoToken.getValue().equals("read") &&
-                        !proximoToken.getValue().equals("write") &&  
-                        !proximoToken.getValue().equals("begin") && 
-                        !proximoToken.getValue().equals("end")
-                    ) {
-                        throw new Exception();
-                    } else {
-                        conferirToken(proximoToken);
-                    }
-                    break;
-                case "begin":
-                case "else":
-                case "do":
-                    proximoToken = pularEspacosQuebras();
-                    if(
-                        !proximoToken.getValue().equals("identifier") &&
-                        !proximoToken.getValue().equals("if") &&
-                        !proximoToken.getValue().equals("do") &&
-                        !proximoToken.getValue().equals("read") &&
-                        !proximoToken.getValue().equals("write")
-                    ) {
-                        throw new Exception();
-                    } else {
-                        conferirToken(proximoToken);
-                    }
-                    break;
-                case "read":
-                    proximoToken = pularEspacosQuebras();
-                    if(
-                        !proximoToken.getValue().equals("lparenthesis")
-                    ) {
-                        throw new Exception();
-                    } else {
-                        conferirToken(proximoToken);
-                    }
-                    break;
-                case "write":
-                    proximoToken = pularEspacosQuebras();
-                    if(
-                        !proximoToken.getValue().equals("lparenthesis")
-                    ) {
-                        throw new Exception();
-                    } else {
-                        conferirToken(proximoToken);
-                    }
-                    break;
-                case "lparenthesis":
-                    proximoToken = pularEspacosQuebras();
-                    if(
-                        !proximoToken.getValue().equals("identifier") &&
-                        !proximoToken.getValue().equals("integer_const")
-                    ) {
-                        throw new Exception();
-                    } else {
-                        stmtLogicalExpression(proximoToken);                        
-                        proximoToken = pularEspacosQuebras();                        
-                        conferirToken(proximoToken);
-                    }
-                    break;
-                case "rparenthesis":
-                    proximoToken = pularEspacosQuebras();
-                    if(
-                        !proximoToken.getValue().equals("semicolon")
-                    ) {
-                        throw new Exception();
-                    } else {
-                        conferirToken(proximoToken);
-                    }
-                    break;
-                case "assign":
-                    stmtAssign(token);
-                    proximoToken = pularEspacosQuebras();
-                    conferirToken(proximoToken);
-                    break;
-                case "end":
-                    proximoToken = pularEspacosQuebras();
-                    if(
-                        !proximoToken.getValue().equals("identifier") &&
-                        !proximoToken.getValue().equals("if") &&
-                        !proximoToken.getValue().equals("do") &&
-                        !proximoToken.getValue().equals("read") &&
-                        !proximoToken.getValue().equals("write") &&
-                        !proximoToken.getValue().equals("end") &&
-                        !proximoToken.getValue().equals("EOF")
-                    ) {
-                        throw new Exception();
-                    } else {
-                        if(proximoToken.getValue().equals("EOF")) {
-                            System.out.println("Arquivo analisado sintáticamente com sucesso");
-                        } else {
-                            conferirToken(proximoToken);
-                        }
-                    }
-                    break;
-                case "if":
-                    proximoToken = pularEspacosQuebras();
-                    if(
-                        !proximoToken.getValue().equals("lparenthesis")
-                    ) {
-                        throw new Exception();
-                    } else {
-                        conferirToken(proximoToken);
-                    }
-                    break;
-                case "while":
-                    proximoToken = pularEspacosQuebras();
-                    if(
-                        !proximoToken.getValue().equals("lparenthesis")
-                    ) {
-                        throw new Exception();
-                    } else {
-                        conferirToken(proximoToken);
-                    }
-                    break;
-                default:
-                    throw new Exception();
-            }   
-        } catch(Exception ex) {
-            String erro = ex.getMessage();
-            if(erro == null) {
-                System.err.println(String.format("Erro linha %1$d: %2$s %3$s", linhaAtual, token.getKey(), proximoToken.getKey()));
-            } else {
-                System.err.println(erro);
+    public void program() throws Exception{
+        try {
+            if(token.getValue().equals("var")){
+//                System.out.println("var");
+                previous_token = token; token = pularEspacosQuebras();
+                decl_list();
+
             }
-            return;
+            else throw new Exception("ERRO NA LINHA " + linhaAtual + ": " + previous_token.getKey() + " " + token.getKey());
+            
+            if(token.getValue().equals("begin")){
+//                System.out.println("begin");
+                previous_token = token; token = pularEspacosQuebras();
+                stmt_list("stmt_program");
+
+            }
+            else throw new Exception("ERRO NA LINHA " + linhaAtual + ": " + previous_token.getKey() + " " + token.getKey());
+            
+            if(token.getValue().equals("end")){
+                
+                System.out.println("Codigo analisado sintaticamente com sucesso.");
+
+            }
+            else throw new Exception();
+        }
+        catch(Exception ex) {
+            String erro = ex.getMessage();
+            System.out.println(erro);
+    }
+    }
+    
+    public void decl_list() throws Exception{
+//        System.out.println("decl_list");
+        while(!token.getValue().equals("begin")){
+            if(token.getValue().equals("EOF")){
+                throw new Exception("ERRO NA LINHA " + linhaAtual + ": " + previous_token.getKey() + " " + token.getKey());
+            }
+            else{
+                decl();
+                previous_token = token; token = pularEspacosQuebras();
+            }
         }
     }
     
+    public void decl() throws Exception{
+//        System.out.println("decl");
+        ident_list();
+        if(token.getValue().equals("is")){
+            previous_token = token; token = pularEspacosQuebras();
+            type();
+        }
+        else{
+            throw new Exception("ERRO NA LINHA " + linhaAtual + ": " + previous_token.getKey() + " " + token.getKey());
+        }
+    }
+    
+    public void type() throws Exception{
+//        System.out.println("type");
+        if(!token.getValue().equals("type")){
+            throw new Exception("ERRO NA LINHA " + linhaAtual + ": " + previous_token.getKey() + " " + token.getKey());
+        }
+        previous_token = token; token = pularEspacosQuebras();
+    }
+    
+    public void ident_list() throws Exception{
+//        System.out.println("ident_list");
+        while(token.getValue().equals("identifier") && !token.getValue().equals("is")){
+            previous_token = token; token = pularEspacosQuebras();
+            if(token.getValue().equals("comma")){
+                previous_token = token; token = pularEspacosQuebras();
+            }
+            else if(!token.getValue().equals("is")){
+                throw new Exception("ERRO NA LINHA " + linhaAtual + ": " + previous_token.getKey() + " " + token.getKey());
+            }
+        }
+    }
+    
+    public void stmt_list(String tipo) throws Exception{
+//        System.out.println("STMTLIST");
+        if(tipo.equals("stmt_if")){
+            while(!token.getValue().equals("end")&&!token.getValue().equals("else")){
+                if(token.getValue().equals("EOF")){
+                    throw new Exception("ERRO NA LINHA " + linhaAtual + ": " + previous_token.getKey() + " " + token.getKey());
+                }
+                else{
+                    stmt();
+                    previous_token = token; token = pularEspacosQuebras();
+                }
+            }
+        }
+        else if(tipo.equals("stmt_program")){
+            while(!token.getValue().equals("end")){
+                if(token.getValue().equals("EOF")){
+                    throw new Exception("ERRO NA LINHA " + linhaAtual + ": " + previous_token.getKey() + " " + token.getKey());
+                }
+                else{
+                    stmt();
+                    previous_token = token; token = pularEspacosQuebras();
+                }
+            }
+        }
+        else if(tipo.equals("stmt_while")){
+            while(!token.getValue().equals("while")){
+                if(token.getValue().equals("EOF")){
+                    throw new Exception("ERRO NA LINHA " + linhaAtual + ": " + previous_token.getKey() + " " + token.getKey());
+                }
+                else{
+                    stmt();
+                    previous_token = token; token = pularEspacosQuebras();
+                }
+            }
+        }
+    }
+    
+    public void stmt() throws Exception{
+//        System.out.println("STMT");
+        switch(token.getValue()){
+            case "identifier":
+                previous_token = token; token = pularEspacosQuebras();
+                assign_stmt();
+                break;
+            case "if":
+                previous_token = token; token = pularEspacosQuebras();
+                if_stmt();
+                break;
+            case "do":
+                previous_token = token; token = pularEspacosQuebras();
+                do_stmt();
+                break;
+            case "read":
+                previous_token = token; token = pularEspacosQuebras();
+                read_stmt();
+                break;
+            case "write":
+                previous_token = token; token = pularEspacosQuebras();
+                write_stmt();
+                break;
+        }
+    }
+    
+    public void write_stmt() throws Exception{
+//        System.out.println("WRITE_STMT");
+        writable();
+        if(!token.getValue().equals("semicolon")){
+            throw new Exception("ERRO NA LINHA " + linhaAtual + ": " + previous_token.getKey() + " " + token.getKey());
+        }
+    }
+    
+    public void writable() throws Exception{
+//        System.out.println("WRITABLE");
+        simple_expr();
+        previous_token = token; token = pularEspacosQuebras();
+        
+    }
+    
+    public void read_stmt() throws Exception{
+//        System.out.println("READ_STMT");
+        if(!token.getValue().equals("lparenthesis")){
+            throw new Exception("ERRO NA LINHA " + linhaAtual + ": " + previous_token.getKey() + " " + token.getKey());
+        }
+        previous_token = token; token = pularEspacosQuebras();
+        if(!token.getValue().equals("identifier")){
+            throw new Exception("ERRO NA LINHA " + linhaAtual + ": " + previous_token.getKey() + " " + token.getKey());
+        }
+        previous_token = token; token = pularEspacosQuebras();
+        if(!token.getValue().equals("rparenthesis")){
+            throw new Exception("ERRO NA LINHA " + linhaAtual + ": " + previous_token.getKey() + " " + token.getKey());
+        }
+        previous_token = token; token = pularEspacosQuebras();
+        if(!token.getValue().equals("semicolon")){
+            throw new Exception("ERRO NA LINHA " + linhaAtual + ": " + previous_token.getKey() + " " + token.getKey());
+        }
+    }
+    
+    public void do_stmt() throws Exception{
+//        System.out.println("DO_STMT");
+        stmt_list("stmt_while");
+        stmt_suffix();
+    }
+    
+    public void stmt_suffix() throws Exception{
+        if(!token.getValue().equals("while")){
+            throw new Exception("ERRO NA LINHA " + linhaAtual + ": " + previous_token.getKey() + " " + token.getKey());
+        }
+        previous_token = token; token = pularEspacosQuebras();
+        condition();
+    }
+    
+    public void if_stmt() throws Exception{
+//        System.out.println("IF_STMT");
+        condition();
+        if(!token.getValue().equals("then")){
+            throw new Exception("ERRO NA LINHA " + linhaAtual + ": " + previous_token.getKey() + " " + token.getKey());
+        }
+        previous_token = token; token = pularEspacosQuebras();
+        stmt_list("stmt_if");
+        if_stmt_2();
+    }
+    
+    public void if_stmt_2() throws Exception{
+//        System.out.println("IF_STMT_2");
+        if(token.getValue().equals("end")){
+//            previous_token = token; token = pularEspacosQuebras();
+        }
+        else if(token.getValue().equals("else")){
+            previous_token = token; token = pularEspacosQuebras();
+            stmt_list("stmt_program");
+        }
+        else{
+            throw new Exception("ERRO NA LINHA " + linhaAtual + ": " + previous_token.getKey() + " " + token.getKey());
+        }
+    }
+    
+    public void condition() throws Exception{
+//        System.out.println("CONDITION");
+        expression();
+        previous_token = token; token = pularEspacosQuebras();
+    }
+    
+    public void assign_stmt() throws Exception{
+//        System.out.println("ASSIGN_STMT");
+        if(!token.getValue().equals("assign")){
+            throw new Exception("ERRO NA LINHA " + linhaAtual + ": " + previous_token.getKey() + " " + token.getKey());
+        }
+        previous_token = token; token = pularEspacosQuebras();
+        simple_expr();
+    }
+    
+    public void simple_expr() throws Exception{
+//        System.out.println("SIMPLE_EXPR");
+        term();
+        simple_expr_2();
+    }
+    
+    public void term() throws Exception{
+//        System.out.println("TERM");
+        factor_a();
+        term_2();
+    }
+    
+    public void factor_a() throws Exception{
+//        System.out.println("FACTOR_A");
+        if(token.getValue().equals("not")||token.getKey().equals("-")){
+            previous_token = token; token = pularEspacosQuebras();
+        }
+        factor();
+    }
+    
+    public void factor() throws Exception{
+//        System.out.println("FACTOR");
+        if(token.getValue().equals("identifier")||token.getValue().equals("integer_const")
+                ||token.getValue().equals("literal_const")){
+            previous_token = token; token = pularEspacosQuebras();
+        }
+        else if(token.getValue().equals("lparenthesis")){
+            previous_token = token; token = pularEspacosQuebras();
+            while(!token.getValue().equals("rparenthesis")){
+                if(token.getValue().equals("EOF")){
+                    throw new Exception("ERRO NA LINHA " + linhaAtual + ": " + previous_token.getKey() + " " + token.getKey());
+                }
+                expression();
+            }
+        }
+        else{
+            throw new Exception("ERRO NA LINHA " + linhaAtual + ": " + previous_token.getKey() + " " + token.getKey());
+        }
+    }
+    
+    public void expression() throws Exception{
+        simple_expr();
+        expression_2();
+    } 
+    
+    public void expression_2() throws Exception{
+        if(token.getValue().equals("relop")){
+            previous_token = token; token = pularEspacosQuebras();
+            simple_expr();
+        }
+    }
+    
+    public void term_2() throws Exception{
+        if(token.getValue().equals("mulop")){
+            previous_token = token; token = pularEspacosQuebras();
+            factor_a();
+            term_2();
+        }
+    }
+    
+    public void simple_expr_2() throws Exception{
+        if(token.getValue().equals("addop")){
+            previous_token = token; token = pularEspacosQuebras();
+            term();
+            simple_expr_2();
+        }
+    }
+    
+    
+    
     public Pair<String, String> pularEspacosQuebras() {                 
         Pair<String, String> token = proximoToken();        
-        if(!token.getValue().equals("space") && !token.getValue().equals("LB")) return token;
+        if(!token.getValue().equals("space") && !token.getValue().equals("LB")){
+//            System.out.println(token.getKey());
+            return token;}
         return pularEspacosQuebras();
     }
     
@@ -221,195 +332,6 @@ public class Sintatico {
         Pair<String, String> proximoToken = lexico.proximoToken();
         if(proximoToken.getValue().equals("LB")) linhaAtual++;
         return proximoToken;
-    }
-    
-    private void stmtAssign(Pair<String, String> token) throws Exception {
-        Pair<String, String> proximoToken = null;        
-        try {
-            switch(token.getValue()) {
-                case "assign":
-                    proximoToken = pularEspacosQuebras();
-                    if(
-                        !proximoToken.getValue().equals("identifier") &&
-                        !proximoToken.getValue().equals("integer_const") &&
-                        !proximoToken.getValue().equals("lparenthesis")
-                    ) {
-                        throw new Exception();
-                    } else {
-                        stmtAssign(proximoToken);
-                    }
-                    break;
-                case "identifier":
-                case "integer_const":
-                    proximoToken = pularEspacosQuebras();
-                    if(
-                        !proximoToken.getValue().equals("semicolon") &&
-                        !proximoToken.getValue().equals("mulop") &&
-                        !proximoToken.getValue().equals("addop")
-                    ) {
-                        throw new Exception();
-                    } else {
-                        stmtAssign(proximoToken);
-                    }
-                    break;
-                case "lparenthesis":
-                    stmtExpression(token);
-                    break;
-                case "mulop":
-                case "addop":
-                    proximoToken = pularEspacosQuebras();
-                    if(
-                        !proximoToken.getValue().equals("identifier") &&
-                        !proximoToken.getValue().equals("integer_const") &&
-                        !proximoToken.getValue().equals("lparenthesis")
-                    ) {
-                        throw new Exception();
-                    } else {
-                        stmtAssign(proximoToken);
-                    }
-                    break;
-            }
-        } catch(Exception ex) {
-            String erro = ex.getMessage();
-            if(erro == null) {
-                throw new Exception(String.format("Erro linha %1$d: %2$s %3$s", linhaAtual, token.getKey(), proximoToken.getKey()));
-            } else {
-                throw new Exception(erro);
-            }
-        }
-        
-    }
-    
-    private void stmtExpression(Pair<String, String> token) throws Exception {
-        Pair<String, String> proximoToken = null;    
-        
-        try {
-        
-            switch(token.getValue()) {
-                case "lparenthesis":
-                    proximoToken = pularEspacosQuebras();
-                    if(
-                        !proximoToken.getValue().equals("identifier") &&
-                        !proximoToken.getValue().equals("integer_const")
-                    ) {
-                        throw new Exception();
-                    } else {
-                        stmtExpression(proximoToken);
-                    }
-                    break;
-                case "integer_const":
-                case "identifier":
-                    proximoToken = pularEspacosQuebras();
-                    if(
-                        !proximoToken.getValue().equals("mulop") &&
-                        !proximoToken.getValue().equals("addop") &&
-                        !proximoToken.getValue().equals("rparenthesis")
-                    ) {
-                        throw new Exception();
-                    } else {
-                        stmtExpression(proximoToken);
-                    }
-                    break;
-                case "mulop":
-                case "addop":
-                    proximoToken = pularEspacosQuebras();
-                    if(                
-                        !proximoToken.getValue().equals("identifier") &&
-                        !proximoToken.getValue().equals("lparenthesis") &&
-                        !proximoToken.getValue().equals("integer_const")
-                    ) {
-                        throw new Exception();
-                    } else {
-                        stmtExpression(proximoToken);
-                    }
-                    break;
-                case "rparenthesis":
-                    proximoToken = pularEspacosQuebras();
-                    if(                
-                        !proximoToken.getValue().equals("semicolon") &&
-                        !proximoToken.getValue().equals("mulop") &&
-                        !proximoToken.getValue().equals("addop")
-                    ) {
-                        throw new Exception();
-                    } else {
-                        stmtExpression(proximoToken);
-                    }
-                    break;
-            }
-        } catch(Exception ex) {
-            String erro = ex.getMessage();
-            if(erro == null) {
-                throw new Exception(String.format("Erro linha %1$d: %2$s %3$s", linhaAtual, token.getKey(), proximoToken.getKey()));
-            } else {
-                throw new Exception(erro);
-            }
-        }
-        
-    }
-    
-    private void stmtLogicalExpression(Pair<String, String> token) throws Exception {
-        Pair<String, String> proximoToken = null;    
-        
-        try {
-        
-            switch(token.getValue()) {
-                case "lparenthesis":
-                    proximoToken = pularEspacosQuebras();
-                    if(
-                        !proximoToken.getValue().equals("identifier") &&
-                        !proximoToken.getValue().equals("integer_const")
-                    ) {
-                        throw new Exception();
-                    } else {
-                        stmtLogicalExpression(proximoToken);
-                    }
-                    break;
-                case "integer_const":
-                case "identifier":
-                    proximoToken = pularEspacosQuebras();
-                    if(
-                        !proximoToken.getValue().equals("relop") &&
-                        !proximoToken.getValue().equals("mulop") &&
-                        !proximoToken.getValue().equals("rparenthesis")
-                    ) {
-                        throw new Exception();
-                    } else {
-                        stmtLogicalExpression(proximoToken);
-                    }
-                    break;
-                case "relop":
-                case "mulop":
-                    proximoToken = pularEspacosQuebras();
-                    if(                
-                        !proximoToken.getValue().equals("identifier") &&
-                        !proximoToken.getValue().equals("integer_const")
-                    ) {
-                        throw new Exception();
-                    } else {
-                        stmtLogicalExpression(proximoToken);
-                    }
-                    break;
-                case "rparenthesis":
-                    proximoToken = pularEspacosQuebras();
-                    if(                
-                        !proximoToken.getValue().equals("semicolon") &&
-                        !proximoToken.getValue().equals("then")
-                    ) {
-                        throw new Exception();
-                    } else {
-                        stmtLogicalExpression(proximoToken);
-                    }
-                    break;
-            }
-        } catch(Exception ex) {
-            String erro = ex.getMessage();
-            if(erro == null) {
-                throw new Exception(String.format("Erro linha %1$d: %2$s %3$s", linhaAtual, token.getKey(), proximoToken.getKey()));
-            } else {
-                throw new Exception(erro);
-            }
-        }
-        
     }
     
 }

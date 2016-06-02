@@ -1,1 +1,1 @@
-vara, b, c is int;result is int;beginin (a);in (c);b := 10;result := (a * c)/(b + 5 - 345);out(result);end
+vara, b, c, maior is int;nomecomple is string;beginin(a);in(b);in(c);maior := 0;if (a > b) thenmaior := a;elseif (b <> c) thenmaior := b;elsemaior := c;endout({Maioridade:   hjjhjh});out(maior);end
