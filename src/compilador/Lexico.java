@@ -26,6 +26,7 @@ public class Lexico {
         grammar.put("begin", Pattern.compile("^begin$"));
         grammar.put("end",Pattern.compile("^end$"));
         grammar.put("is",Pattern.compile("^is$"));
+        grammar.put("not",Pattern.compile("^not$"));
         grammar.put("type",Pattern.compile("(^int$)|(^string$)"));
         grammar.put("if",Pattern.compile("^if$"));
         grammar.put("then",Pattern.compile("^then$"));
@@ -66,7 +67,7 @@ public class Lexico {
     
     public void analiseLexica() throws Exception{
         LeArquivo parser = new LeArquivo(filename);        
-        
+        int linha = 1;
         String lexema = "";
         do {
             boolean match = false;
@@ -79,17 +80,20 @@ public class Lexico {
                   if(localKey.equals("identifier")) {
                     if(symbol_table.get(lexema) == null) {
                         symbol_table.put(lexema, "identifier");
-                    }   
+                    }
+                  }
+                  else if(localKey.equals("LB")){
+                      linha++;
                   }
                   tokens.add(new Pair<>(lexema, entry.getKey()));
-                  System.out.println("Token: " + lexema + " -> " + entry.getKey());
+//                  System.out.println("Token: " + lexema + " -> " + entry.getKey());
                   match = true;
                   break;
               }
             }
             
              if(!match) {
-                 throw new Exception("Token não reconhecido em: " + lexema);
+                 throw new Exception("Token não reconhecido em: " + lexema + ", linha " + linha);
              }
             
         } while(!lexema.equals("EOF"));
