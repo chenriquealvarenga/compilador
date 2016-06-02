@@ -11,7 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.StringTokenizer;
 
-public class Parser {
+public class LeArquivo {
   private FileReader file;
   private BufferedReader data;
   private String line;
@@ -19,7 +19,7 @@ public class Parser {
   private static final String delim = "\r\t,;+-*/%(){} ";
   private boolean bracket= false;
 
-  public Parser(String name) {
+  public LeArquivo(String name) {
 
     try {
       //Conteudo do arquivo considerando encode em UTF-8 (padrao)
@@ -27,6 +27,15 @@ public class Parser {
       
       //Transformando as possibilidade de separador alem de operacoes em espacos      
       //contentArchive = contentArchive.replace(",", " ");
+      
+      //Adicionando espaco antes e depois de relops e assigns para separa-los
+      contentArchive = contentArchive.replaceAll("<", " < ");
+      contentArchive = contentArchive.replaceAll(">", " > ");
+      contentArchive = contentArchive.replaceAll("<=", " <= ");
+      contentArchive = contentArchive.replaceAll(">=", " >= ");
+      contentArchive = contentArchive.replaceAll("<>", " <> ");
+      contentArchive = contentArchive.replaceAll(":=", " := ");
+      
       //Condensando espacos multiplos em unificados
       contentArchive = contentArchive.replaceAll(" +", " ");
       

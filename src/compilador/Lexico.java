@@ -47,9 +47,8 @@ public class Lexico {
         grammar.put("comment",Pattern.compile("^%$"));
         grammar.put("newline",Pattern.compile("\\n"));
         grammar.put("integer_const",Pattern.compile("(^[1-9]+[0-9]*$)|(^0$)"));
-        grammar.put("identifier",Pattern.compile("(^[a-zA-Z][a-zA-Z0-9]*$)|(^_[a-zA-Z0-9]{1,14})"));
-        grammar.put("literal_const",Pattern.compile("^\\{[^\\{\n]*\\}$"));        
-        grammar.put("unknown",Pattern.compile(".*"));
+        grammar.put("identifier",Pattern.compile("(^[a-zA-Z][a-zA-Z0-9]{0,14}$)|(^_[a-zA-Z0-9]{1,14})"));
+        grammar.put("literal_const",Pattern.compile("^\\{[^\\{\n]*\\}$"));       
     }
     
     //Tabela de símbolos contendo identificador e tipo
@@ -66,7 +65,7 @@ public class Lexico {
     }
     
     public void analiseLexica() throws Exception{
-        Parser parser = new Parser(filename);        
+        LeArquivo parser = new LeArquivo(filename);        
         
         String lexema = "";
         do {
@@ -83,7 +82,7 @@ public class Lexico {
                     }   
                   }
                   tokens.add(new Pair<>(lexema, entry.getKey()));
-                  //System.out.println("Token: " + lexema + " -> " + entry.getKey());
+                  System.out.println("Token: " + lexema + " -> " + entry.getKey());
                   match = true;
                   break;
               }
