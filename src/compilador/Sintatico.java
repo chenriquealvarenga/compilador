@@ -30,7 +30,9 @@ public class Sintatico {
                 decl_list();
 
             }
-            else throw new Exception("ERRO NA LINHA " + linhaAtual + ": " + previous_token.getKey() + " " + token.getKey());
+            else{
+                throw new Exception("ERRO NA LINHA " + linhaAtual + ": " + token.getKey());
+            }
             
             if(token.getValue().equals("begin")){
 //                System.out.println("begin");
@@ -315,6 +317,10 @@ public class Sintatico {
             previous_token = token; token = pularEspacosQuebras();
             term();
             simple_expr_2();
+        }
+        else if(!token.getValue().equals("semicolon")&&!token.getValue().equals("rparenthesis")
+                &&!token.getValue().equals("relop")){
+            throw new Exception("ERRO NA LINHA " + linhaAtual + ": " + previous_token.getKey() + " " + token.getKey());
         }
     }
     

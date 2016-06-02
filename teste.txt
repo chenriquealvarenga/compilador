@@ -1,1 +1,1 @@
-vara, b, c, maior is int;nomecomple is string;beginin(a);in(b);in(c);maior := 0;if (a > b) thenmaior := a;elseif (b <> c) thenmaior := b;elsemaior := c;endout({Maioridade:   hjjhjh});out(maior);end
+var        x, y, z is int;begin        if(x = y) then                if(y = z) then                        out({Texto com espaço});                else                        in(x);        end        do                y := x + z;        while(y <= z);end
