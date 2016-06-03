@@ -1,0 +1,1 @@
+var_cont is int;media, altura, soma_ is int;begin_cont := 5;soma = 0;dowrite({Altura: });in (altura);soma := soma altura;_cont := _cont - 1;while(_cont);out({Media: });out (soma / qtd);end

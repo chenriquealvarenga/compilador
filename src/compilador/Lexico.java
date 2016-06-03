@@ -20,7 +20,7 @@ public class Lexico {
     {
         grammar = new LinkedHashMap<String, Pattern>();
         grammar.put("space", Pattern.compile(" +"));
-        grammar.put("LB", Pattern.compile("\r"));
+        grammar.put("LB", Pattern.compile("[\r\n]"));
         grammar.put("EOF", Pattern.compile("EOF"));
         grammar.put("var", Pattern.compile("^var$"));
         grammar.put("begin", Pattern.compile("^begin$"));

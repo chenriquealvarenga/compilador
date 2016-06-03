@@ -16,7 +16,7 @@ public class LeArquivo {
   private BufferedReader data;
   private String line;
   private StringTokenizer st;
-  private static final String delim = "\r\t,;+-*/%(){} ";
+  private static final String delim = "\r\n\t,;+-*/%(){} ";
   private boolean bracket= false;
 
   public LeArquivo(String name) {
