@@ -18,7 +18,7 @@ public class Compilador {
         lexico.analiseLexica();
         
         Sintatico sintatico = new Sintatico(lexico);
-        sintatico.analiseSintatica();
+        sintatico.analiseSintaticaeSemantica();
         
     }
 }

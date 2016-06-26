@@ -1,1 +1,3 @@
-varx, y, z is int;beginif(x = y) thenif(y = z) thenout({Texto com espaço});elsein(x);enddoy := x + z;while(y <= z);end
+varx, y, z is int;
+s is string;beginif(x = y) thenif(y = z) thenout({Texto com espaço});elsein(x);enddoy := x + z;while(y <= s);end
+end

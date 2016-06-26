@@ -1,1 +1,10 @@
-vari, j, k, @total, 1soma is int;begini := 4 * (5-3 * 50 / 10;j := i * 10;k := i* j / k;k := 4 + a $;out(i);out(j);out(k);end
+var
+i, j, k, total, soma is int;
+begin
+i := 4 * (5-3 * 50 / 10);
+j := i * 10;
+k := i* j / k;
+k := 4 + a;
+out(i);
+out(j);
+out(k);end

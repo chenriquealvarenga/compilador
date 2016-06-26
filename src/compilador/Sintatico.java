@@ -1,6 +1,7 @@
 package compilador;
 
 import javafx.util.Pair;
+import java.util.HashMap;
 
 /**
  *
@@ -12,40 +13,40 @@ public class Sintatico {
     private Lexico lexico;
     private Pair<String, String> token = null;
     private Pair<String, String> previous_token = null;
+    public HashMap<String,Tipo> symbol_table = null;
     
     public Sintatico(Lexico lexico) {
-        this.lexico = lexico;              
+        this.lexico = lexico;    
+        this.symbol_table = new HashMap<String,Tipo>();
     }
     
-    public void analiseSintatica() throws Exception {
+    public void analiseSintaticaeSemantica() throws Exception {
         token = lexico.proximoToken();
-        program();
+        RegrasSemanticas regra = new RegrasSemanticas(0);
+        program(regra);
     }
     
-    public void program() throws Exception{
+    public void program(RegrasSemanticas regra) throws Exception{
         try {
             if(token.getValue().equals("var")){
 //                System.out.println("var");
                 previous_token = token; token = pularEspacosQuebras();
-                decl_list();
+                decl_list(regra);
 
             }
             else{
                 throw new Exception("ERRO NA LINHA " + linhaAtual + ": " + token.getKey());
             }
-            
             if(token.getValue().equals("begin")){
 //                System.out.println("begin");
                 previous_token = token; token = pularEspacosQuebras();
-                stmt_list("stmt_program");
+                stmt_list("stmt_program", regra);
 
             }
             else throw new Exception("ERRO NA LINHA " + linhaAtual + ": " + previous_token.getKey() + " " + token.getKey());
-            
             if(token.getValue().equals("end")){
                 
                 System.out.println("Codigo analisado sintaticamente com sucesso.");
-
             }
             else throw new Exception();
         }
@@ -54,43 +55,56 @@ public class Sintatico {
             System.out.println(erro);
     }
     }
-    
-    public void decl_list() throws Exception{
+
+    public void decl_list(RegrasSemanticas regra) throws Exception{
 //        System.out.println("decl_list");
         while(!token.getValue().equals("begin")){
             if(token.getValue().equals("EOF")){
                 throw new Exception("ERRO NA LINHA " + linhaAtual + ": " + previous_token.getKey() + " " + token.getKey());
             }
             else{
-                decl();
+                decl(regra);
                 previous_token = token; token = pularEspacosQuebras();
             }
         }
     }
     
-    public void decl() throws Exception{
+
+    public void decl(RegrasSemanticas regra) throws Exception{
 //        System.out.println("decl");
-        ident_list();
+        RegrasSemanticas r = RegrasSemanticas.declaracao();
+        ident_list(r);
         if(token.getValue().equals("is")){
             previous_token = token; token = pularEspacosQuebras();
-            type();
+            type(r);
+            r.setTiposDeclaracoes(this);
+            regra.setTipo(r.getTipo());
         }
         else{
             throw new Exception("ERRO NA LINHA " + linhaAtual + ": " + previous_token.getKey() + " " + token.getKey());
         }
     }
     
-    public void type() throws Exception{
+
+    public void type(RegrasSemanticas regra) throws Exception{
 //        System.out.println("type");
         if(!token.getValue().equals("type")){
             throw new Exception("ERRO NA LINHA " + linhaAtual + ": " + previous_token.getKey() + " " + token.getKey());
         }
+        else if(token.getKey().equals("int")){
+            regra.setTipo(Tipo.inteiro());
+        }
+        else{
+            regra.setTipo(Tipo.string());
+        }
         previous_token = token; token = pularEspacosQuebras();
     }
     
-    public void ident_list() throws Exception{
+
+    public void ident_list(RegrasSemanticas regra) throws Exception{
 //        System.out.println("ident_list");
         while(token.getValue().equals("identifier") && !token.getValue().equals("is")){
+            regra.verificarId(this, token);
             previous_token = token; token = pularEspacosQuebras();
             if(token.getValue().equals("comma")){
                 previous_token = token; token = pularEspacosQuebras();
@@ -101,86 +115,94 @@ public class Sintatico {
         }
     }
     
-    public void stmt_list(String tipo) throws Exception{
+
+    public void stmt_list(String tipoStmt, RegrasSemanticas regra) throws Exception{
 //        System.out.println("STMTLIST");
-        if(tipo.equals("stmt_if")){
+        if(tipoStmt.equals("stmt_if")){
             while(!token.getValue().equals("end")&&!token.getValue().equals("else")){
                 if(token.getValue().equals("EOF")){
                     throw new Exception("ERRO NA LINHA " + linhaAtual + ": " + previous_token.getKey() + " " + token.getKey());
                 }
                 else{
-                    stmt();
+                    stmt(regra);
                     previous_token = token; token = pularEspacosQuebras();
                 }
             }
         }
-        else if(tipo.equals("stmt_program")){
+        else if(tipoStmt.equals("stmt_program")){
             while(!token.getValue().equals("end")){
                 if(token.getValue().equals("EOF")){
                     throw new Exception("ERRO NA LINHA " + linhaAtual + ": " + previous_token.getKey() + " " + token.getKey());
                 }
                 else{
-                    stmt();
+                    stmt(regra);
                     previous_token = token; token = pularEspacosQuebras();
                 }
             }
         }
-        else if(tipo.equals("stmt_while")){
+        else if(tipoStmt.equals("stmt_while")){
             while(!token.getValue().equals("while")){
                 if(token.getValue().equals("EOF")){
                     throw new Exception("ERRO NA LINHA " + linhaAtual + ": " + previous_token.getKey() + " " + token.getKey());
                 }
                 else{
-                    stmt();
+                    stmt(regra);
                     previous_token = token; token = pularEspacosQuebras();
                 }
             }
         }
     }
     
-    public void stmt() throws Exception{
+
+    public void stmt(RegrasSemanticas regra) throws Exception{
 //        System.out.println("STMT");
         switch(token.getValue()){
             case "identifier":
                 previous_token = token; token = pularEspacosQuebras();
-                assign_stmt();
+                assign_stmt(regra);
                 break;
             case "if":
                 previous_token = token; token = pularEspacosQuebras();
-                if_stmt();
+                if_stmt(regra);
                 break;
             case "do":
                 previous_token = token; token = pularEspacosQuebras();
-                do_stmt();
+                do_stmt(regra);
                 break;
             case "read":
                 previous_token = token; token = pularEspacosQuebras();
-                read_stmt();
+                read_stmt(regra);
                 break;
             case "write":
                 previous_token = token; token = pularEspacosQuebras();
-                write_stmt();
+                write_stmt(regra);
                 break;
         }
     }
     
-    public void write_stmt() throws Exception{
+
+    public void write_stmt(RegrasSemanticas regra) throws Exception{
 //        System.out.println("WRITE_STMT");
-        writable();
+        RegrasSemanticas r = RegrasSemanticas.escrita();
+        writable(r);
+        regra.setTipo(r.getTipo());
         if(!token.getValue().equals("semicolon")){
             throw new Exception("ERRO NA LINHA " + linhaAtual + ": " + previous_token.getKey() + " " + token.getKey());
         }
     }
     
-    public void writable() throws Exception{
+
+    public void writable(RegrasSemanticas regra) throws Exception{
 //        System.out.println("WRITABLE");
-        simple_expr();
+        simple_expr(regra);
         previous_token = token; token = pularEspacosQuebras();
         
     }
     
-    public void read_stmt() throws Exception{
+
+    public void read_stmt(RegrasSemanticas regra) throws Exception{
 //        System.out.println("READ_STMT");
+        RegrasSemanticas r = RegrasSemanticas.leitura();
         if(!token.getValue().equals("lparenthesis")){
             throw new Exception("ERRO NA LINHA " + linhaAtual + ": " + previous_token.getKey() + " " + token.getKey());
         }
@@ -188,6 +210,10 @@ public class Sintatico {
         if(!token.getValue().equals("identifier")){
             throw new Exception("ERRO NA LINHA " + linhaAtual + ": " + previous_token.getKey() + " " + token.getKey());
         }
+        
+        r.verificarId(this, token);
+        regra.verificarLeitura(r, linhaAtual);
+        
         previous_token = token; token = pularEspacosQuebras();
         if(!token.getValue().equals("rparenthesis")){
             throw new Exception("ERRO NA LINHA " + linhaAtual + ": " + previous_token.getKey() + " " + token.getKey());
@@ -198,84 +224,110 @@ public class Sintatico {
         }
     }
     
-    public void do_stmt() throws Exception{
+
+    public void do_stmt(RegrasSemanticas regra) throws Exception{
 //        System.out.println("DO_STMT");
-        stmt_list("stmt_while");
-        stmt_suffix();
+        stmt_list("stmt_while", regra);
+        stmt_suffix(regra);
     }
     
-    public void stmt_suffix() throws Exception{
+
+    public void stmt_suffix(RegrasSemanticas regra) throws Exception{
         if(!token.getValue().equals("while")){
             throw new Exception("ERRO NA LINHA " + linhaAtual + ": " + previous_token.getKey() + " " + token.getKey());
         }
         previous_token = token; token = pularEspacosQuebras();
-        condition();
+        condition(regra);
+        regra.verificarWhileIf(linhaAtual);
     }
     
-    public void if_stmt() throws Exception{
+
+    public void if_stmt(RegrasSemanticas regra) throws Exception{
 //        System.out.println("IF_STMT");
-        condition();
+        condition(regra);
+        regra.verificarWhileIf(linhaAtual);
         if(!token.getValue().equals("then")){
             throw new Exception("ERRO NA LINHA " + linhaAtual + ": " + previous_token.getKey() + " " + token.getKey());
         }
         previous_token = token; token = pularEspacosQuebras();
-        stmt_list("stmt_if");
-        if_stmt_2();
+        stmt_list("stmt_if", regra);
+        if_stmt_2(regra);
     }
     
-    public void if_stmt_2() throws Exception{
+//    FEITO
+    public void if_stmt_2(RegrasSemanticas regra) throws Exception{
 //        System.out.println("IF_STMT_2");
         if(token.getValue().equals("end")){
 //            previous_token = token; token = pularEspacosQuebras();
         }
         else if(token.getValue().equals("else")){
             previous_token = token; token = pularEspacosQuebras();
-            stmt_list("stmt_program");
+            stmt_list("stmt_program", regra);
         }
         else{
             throw new Exception("ERRO NA LINHA " + linhaAtual + ": " + previous_token.getKey() + " " + token.getKey());
         }
     }
     
-    public void condition() throws Exception{
+//    FEITO
+    public void condition(RegrasSemanticas regra) throws Exception{
 //        System.out.println("CONDITION");
-        expression();
+        regra.setTipo(Tipo.inteiro());
+        expression(regra);
+        regra.verificarCondicao();
         previous_token = token; token = pularEspacosQuebras();
     }
     
-    public void assign_stmt() throws Exception{
+//    FEITO
+    public void assign_stmt(RegrasSemanticas regra) throws Exception{
 //        System.out.println("ASSIGN_STMT");
+        RegrasSemanticas r1 = RegrasSemanticas.atribuicao(Tipo.vazio());
+        RegrasSemanticas r2 = RegrasSemanticas.atribuicao(Tipo.vazio());
+        r1.verificarId(this, previous_token);
         if(!token.getValue().equals("assign")){
             throw new Exception("ERRO NA LINHA " + linhaAtual + ": " + previous_token.getKey() + " " + token.getKey());
         }
         previous_token = token; token = pularEspacosQuebras();
-        simple_expr();
+        simple_expr(r2);
+        regra.verificarAtribuicao(r1, r2, linhaAtual);
     }
     
-    public void simple_expr() throws Exception{
+//    FEITO
+    public void simple_expr(RegrasSemanticas regra) throws Exception{
 //        System.out.println("SIMPLE_EXPR");
-        term();
-        simple_expr_2();
+        term(regra);
+        simple_expr_2(regra);
     }
     
-    public void term() throws Exception{
+//    FEITO
+    public void term(RegrasSemanticas regra) throws Exception{
 //        System.out.println("TERM");
-        factor_a();
-        term_2();
+        factor_a(regra);
+        term_2(regra);
     }
     
-    public void factor_a() throws Exception{
+//    FEITO
+    public void factor_a(RegrasSemanticas regra) throws Exception{
 //        System.out.println("FACTOR_A");
         if(token.getValue().equals("not")||token.getKey().equals("-")){
             previous_token = token; token = pularEspacosQuebras();
         }
-        factor();
+        factor(regra);
     }
     
-    public void factor() throws Exception{
+//    FEITO
+    public void factor(RegrasSemanticas regra) throws Exception{
 //        System.out.println("FACTOR");
-        if(token.getValue().equals("identifier")||token.getValue().equals("integer_const")
-                ||token.getValue().equals("literal_const")){
+        if(token.getValue().equals("identifier")){
+            regra.verificarId(this,token);
+            previous_token = token; token = pularEspacosQuebras();
+        }
+        else if(token.getValue().equals("integer_const")){
+            regra.verificarNumero(this);
+            previous_token = token; token = pularEspacosQuebras();
+        }   
+        else if(token.getValue().equals("literal_const")){
+            regra.verificarLiteral(this);
             previous_token = token; token = pularEspacosQuebras();
         }
         else if(token.getValue().equals("lparenthesis")){
@@ -284,7 +336,7 @@ public class Sintatico {
                 if(token.getValue().equals("EOF")){
                     throw new Exception("ERRO NA LINHA " + linhaAtual + ": " + previous_token.getKey() + " " + token.getKey());
                 }
-                expression();
+                expression(regra);
             }
         }
         else{
@@ -292,31 +344,48 @@ public class Sintatico {
         }
     }
     
-    public void expression() throws Exception{
-        simple_expr();
-        expression_2();
+//    FEITO
+    public void expression(RegrasSemanticas regra) throws Exception{
+        RegrasSemanticas r1 = RegrasSemanticas.expressao(regra.getTipo());
+        RegrasSemanticas r2 = RegrasSemanticas.expressao(regra.getTipo());
+        simple_expr(r1);
+        expression_2(r2);
+        regra.verificarExpressao(r1, r2, linhaAtual);
     } 
     
-    public void expression_2() throws Exception{
+//    FEITO
+    public void expression_2(RegrasSemanticas regra) throws Exception{
         if(token.getValue().equals("relop")){
             previous_token = token; token = pularEspacosQuebras();
-            simple_expr();
+            regra.operacao();
+            regra.operacaoLogica();
+            simple_expr(regra);
         }
     }
     
-    public void term_2() throws Exception{
+//    FEITO (CONFERIR)
+    public void term_2(RegrasSemanticas regra) throws Exception{
         if(token.getValue().equals("mulop")){
             previous_token = token; token = pularEspacosQuebras();
-            factor_a();
-            term_2();
+            regra.operacao();
+            if(previous_token.getKey().equals("and")){
+                regra.operacaoLogica();
+            }
+            factor_a(regra);
+            term_2(regra);
         }
     }
     
-    public void simple_expr_2() throws Exception{
+//    FEITO (CONFERIR)
+    public void simple_expr_2(RegrasSemanticas regra) throws Exception{
         if(token.getValue().equals("addop")){
             previous_token = token; token = pularEspacosQuebras();
-            term();
-            simple_expr_2();
+            regra.operacao();
+            if(previous_token.getKey().equals("or")){
+                regra.operacaoLogica();
+            }
+            term(regra);
+            simple_expr_2(regra);
         }
         else if(!token.getValue().equals("semicolon")&&!token.getValue().equals("rparenthesis")
                 &&!token.getValue().equals("relop")){
